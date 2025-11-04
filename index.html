@@ -54,11 +54,9 @@ const MESSAGES = [
 "保持好心情☀️","愿你被爱包围💖","小确幸每天都有～","记得善待自己💫","好运常伴你左右🍀",
 "微笑是最美的语言😊","给自己一个拥抱🤗","希望今天充满惊喜🎉","生活温柔对待你🌸","你很特别✨"
 ];
-
 function randomPastelColor(){ const hue=Math.random()*360; return `hsl(${hue},70%,85%)`; }
 function jitter(max=14){ return Math.floor(Math.random()*(max*2+1))-max; }
 function isMobile(){ return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
-
 function createMessageBox(x,y,color,text){
   const box=document.createElement('div');
   box.className='message-box';
@@ -70,8 +68,6 @@ function createMessageBox(x,y,color,text){
   });
   return box;
 }
-
-// 心形生成
 function heartPointsAdaptive(n,scaleX,scaleY){
   const points=[];
   for(let i=0;i<n;i++){
@@ -83,14 +79,10 @@ function heartPointsAdaptive(n,scaleX,scaleY){
   const minIdx=points.reduce((minIdx,p,idx)=>p.y<p[minIdx].y?idx:minIdx,0);
   return points.slice(minIdx).concat(points.slice(0,minIdx));
 }
-
-// 动画主函数
 function startAnimation(){
   document.getElementById('startBtn').style.display='none';
   startFirstPhase(()=>{ startSecondPhase(); });
 }
-
-// 第一阶段：心形 → 自动消失
 function startFirstPhase(callback){
   const screenWidth=window.innerWidth;
   const screenHeight=window.innerHeight;
@@ -98,11 +90,9 @@ function startFirstPhase(callback){
   const scale=Math.min(screenWidth,screenHeight)/40;
   const centerX=screenWidth/2;
   const centerY=screenHeight/2-(isMobile()?40:80);
-
   const points=heartPointsAdaptive(count,scale,scale);
   const messages=[...MESSAGES].sort(()=>Math.random()-0.5);
   const boxes=[];
-
   points.forEach((point,idx)=>{
     setTimeout(()=>{
       const x=centerX+point.x+jitter(10);
@@ -115,8 +105,6 @@ function startFirstPhase(callback){
       setTimeout(()=>{ box.style.transition='all 0.6s ease'; box.style.left=x+'px'; box.style.top=y+'px'; box.style.opacity='1'; box.style.transform='scale(1)'; },50);
     }, idx*80);
   });
-
-  // 第一阶段结束后自动消失
   setTimeout(()=>{
     boxes.forEach(box=>{ box.style.opacity='0'; box.style.transform='scale(0.5)'; });
     setTimeout(()=>{
@@ -125,14 +113,11 @@ function startFirstPhase(callback){
     },300);
   }, count*80+1500);
 }
-
-// 第二阶段：爆炸消息 → 不消失
 function startSecondPhase(){
   const screenWidth=window.innerWidth;
   const screenHeight=window.innerHeight;
   const explodeCount=isMobile()?12:20;
   const explodeMessages=[...MESSAGES].sort(()=>Math.random()-0.5);
-
   for(let i=0;i<explodeCount;i++){
     setTimeout(()=>{
       const x=10+Math.random()*(screenWidth-160);
@@ -145,26 +130,19 @@ function startSecondPhase(){
       setTimeout(()=>{ box.style.transition='all 0.5s ease'; box.style.opacity='1'; box.style.transform='scale(1)'; },50);
     }, i*80);
   }
-
-  // 显示按钮
   setTimeout(()=>{
     const btn=document.getElementById('startBtn');
     btn.style.display='block';
     btn.textContent='再看一次 ✨';
   }, explodeCount*80+500);
 }
-
-// 自动播放
 window.addEventListener('load',()=>{ startAnimation(); });
-
-// 防止双击缩放
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(event){
   const now=(new Date()).getTime();
   if(now-lastTouchEnd<=300) event.preventDefault();
   lastTouchEnd=now;
 },false);
-
 </script>
 </body>
 </html>
