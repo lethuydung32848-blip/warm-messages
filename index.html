@@ -5,18 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>暖心提示 💝</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             margin: 0;
             padding: 0;
             background: linear-gradient(135deg, #ffe8e8, #f5f5f5);
-            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
             height: 100vh;
+            overflow: hidden;
             touch-action: manipulation;
         }
         .message-box {
@@ -40,9 +36,7 @@
             border: 2px solid rgba(255,255,255,0.3);
             transition: transform 0.2s ease;
         }
-        .message-box:active {
-            transform: scale(0.95);
-        }
+        .message-box:active { transform: scale(0.95); }
         #startBtn {
             position: fixed;
             top: 50%;
@@ -59,9 +53,7 @@
             box-shadow: 0 10px 30px rgba(255,107,107,0.4);
             transition: all 0.3s ease;
         }
-        #startBtn:active {
-            transform: translate(-50%, -50%) scale(0.95);
-        }
+        #startBtn:active { transform: translate(-50%, -50%) scale(0.95); }
         .instructions {
             position: fixed;
             bottom: 30px;
@@ -77,7 +69,6 @@
 <body>
     <button id="startBtn">点击接收温暖 💕</button>
     <div class="instructions">点击消息框可以快速关闭</div>
-    
     <script>
         const MESSAGES = [
             "早点休息～", "多喝水呀～", "记得吃饭～", "保持微笑😊", "加油！你可以的！",
@@ -113,17 +104,15 @@
             box.style.top = y + 'px';
             box.style.background = color;
             box.textContent = text;
-            
+
             box.addEventListener('click', function() {
                 this.style.opacity = '0';
                 this.style.transform = 'scale(0.5)';
                 setTimeout(() => {
-                    if (this.parentNode) {
-                        this.parentNode.removeChild(this);
-                    }
+                    if (this.parentNode) this.parentNode.removeChild(this);
                 }, 300);
             });
-            
+
             return box;
         }
 
@@ -131,43 +120,35 @@
             return Math.floor(Math.random() * (max * 2 + 1)) - max;
         }
 
+        function isMobile() {
+            return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        }
+
         function startAnimation() {
-            const startBtn = document.getElementById('startBtn');
-            startBtn.style.display = 'none';
-            
+            document.getElementById('startBtn').style.display = 'none';
+            if (isMobile()) startMobileAnimation();
+            else startDesktopAnimation();
+        }
+
+        function startMobileAnimation() {
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            const winWidth = Math.min(300, screenWidth * 0.85);
-            const winHeight = 100;
-            const count = 18; // 手机端适当减少数量
-            
+            const count = 18;
             const scale = Math.min(screenWidth * 0.8 / 32, screenHeight * 0.6 / 30);
             const centerX = screenWidth / 2;
             const centerY = screenHeight / 2 - 60;
-            
             const points = heartPoints(count);
-            const heartMessages = [...MESSAGES].sort(() => Math.random() - 0.5);
-            
-            // 第一阶段：心形显示
+            const messages = [...MESSAGES].sort(() => Math.random() - 0.5);
+
             points.forEach((point, idx) => {
                 setTimeout(() => {
-                    const px = Math.max(10, Math.min(
-                        centerX + point.x * scale - winWidth / 2 + jitter(20),
-                        screenWidth - winWidth - 10
-                    ));
-                    const py = Math.max(10, Math.min(
-                        centerY - point.y * scale - winHeight / 2 + jitter(15),
-                        screenHeight - winHeight - 10
-                    ));
-                    
+                    const x = Math.max(10, Math.min(centerX + point.x * scale - 150 + jitter(20), screenWidth - 160));
+                    const y = Math.max(10, Math.min(centerY - point.y * scale - 50 + jitter(15), screenHeight - 60));
                     const color = randomPastelColor();
-                    const text = heartMessages[idx % heartMessages.length];
-                    const box = createMessageBox(px, py, color, text);
+                    const box = createMessageBox(x, y, color, messages[idx % messages.length]);
                     box.style.opacity = '0';
                     box.style.transform = 'scale(0.5)';
                     document.body.appendChild(box);
-                    
-                    // 入场动画
                     setTimeout(() => {
                         box.style.transition = 'all 0.5s ease';
                         box.style.opacity = '1';
@@ -175,81 +156,43 @@
                     }, 50);
                 }, idx * 120);
             });
-            
-            // 第二阶段：聚集后爆炸
-            setTimeout(() => {
-                const allBoxes = document.querySelectorAll('.message-box');
-                const gatherX = centerX - winWidth / 2;
-                const gatherY = centerY - winHeight / 2;
-                
-                allBoxes.forEach((box, idx) => {
-                    setTimeout(() => {
-                        box.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                        box.style.left = gatherX + 'px';
-                        box.style.top = gatherY + 'px';
-                        box.style.transform = 'scale(1.1)';
-                    }, idx * 30);
-                });
-                
-                // 爆炸效果
-                setTimeout(() => {
-                    allBoxes.forEach(box => {
-                        box.style.transition = 'all 0.3s ease';
-                        box.style.opacity = '0';
-                        setTimeout(() => {
-                            if (box.parentNode) {
-                                box.parentNode.removeChild(box);
-                            }
-                        }, 300);
-                    });
-                    
-                    // 创建爆炸效果的新消息
-                    setTimeout(() => {
-                        const explodeCount = 12;
-                        const explodeMessages = [...MESSAGES].sort(() => Math.random() - 0.5);
-                        
-                        for (let i = 0; i < explodeCount; i++) {
-                            setTimeout(() => {
-                                const x = 10 + Math.random() * (screenWidth - winWidth - 20);
-                                const y = 10 + Math.random() * (screenHeight - winHeight - 20);
-                                const color = randomPastelColor();
-                                const text = explodeMessages[i % explodeMessages.length];
-                                const box = createMessageBox(x, y, color, text);
-                                box.style.opacity = '0';
-                                box.style.transform = 'scale(0.5)';
-                                document.body.appendChild(box);
-                                
-                                setTimeout(() => {
-                                    box.style.transition = 'all 0.5s ease';
-                                    box.style.opacity = '1';
-                                    box.style.transform = 'scale(1)';
-                                }, 50);
-                            }, i * 80);
-                        }
-                        
-                        // 最后显示重新开始按钮
-                        setTimeout(() => {
-                            startBtn.style.display = 'block';
-                            startBtn.textContent = '再看一次 ✨';
-                        }, explodeCount * 80 + 2000);
-                        
-                    }, 500);
-                    
-                }, allBoxes.length * 30 + 1000);
-                
-            }, count * 120 + 1500);
         }
 
-        // 添加点击事件
+        function startDesktopAnimation() {
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const count = 30;
+            const scale = Math.min(screenWidth * 0.8 / 32, screenHeight * 0.6 / 30);
+            const centerX = screenWidth / 2;
+            const centerY = screenHeight / 2 - 80;
+            const points = heartPoints(count);
+            const messages = [...MESSAGES].sort(() => Math.random() - 0.5);
+
+            points.forEach((point, idx) => {
+                setTimeout(() => {
+                    const x = centerX + point.x * scale - 150 + jitter(30);
+                    const y = centerY - point.y * scale - 50 + jitter(20);
+                    const color = randomPastelColor();
+                    const box = createMessageBox(x, y, color, messages[idx % messages.length]);
+                    box.style.opacity = '0';
+                    box.style.transform = 'scale(0.5)';
+                    document.body.appendChild(box);
+                    setTimeout(() => {
+                        box.style.transition = 'all 0.5s ease';
+                        box.style.opacity = '1';
+                        box.style.transform = 'scale(1)';
+                    }, 50);
+                }, idx * 80);
+            });
+        }
+
         document.getElementById('startBtn').addEventListener('click', startAnimation);
-        
+
         // 防止双击缩放
         let lastTouchEnd = 0;
         document.addEventListener('touchend', function (event) {
             const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
+            if (now - lastTouchEnd <= 300) event.preventDefault();
             lastTouchEnd = now;
         }, false);
     </script>
